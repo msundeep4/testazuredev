@@ -1,0 +1,29 @@
+trigger:
+- master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  vmHost: 'your-vm-public-ip'       # Replace with your VM's public IP
+  vmUser: 'azureuser'               # Replace with your VM's SSH username
+  vmKey: $(vmPrivateKey)            # Define this as a secret variable
+
+steps:
+- task: InstallSSHKey@0
+  inputs:
+    sshPublicKey: ''
+    sshKeySecureFile: 'vm-private-key.pem'   # Upload this to Secure Files in DevOps
+    knownHostsEntry: '$(vmHost)'
+
+- task: SSH@0
+  inputs:
+    sshEndpoint: ''
+    sshHost: '$(vmHost)'
+    sshUser: '$(vmUser)'
+    sshKey: '$(vmKey)'
+    script: |
+      echo "Connected to Azure VM"
+      uname -a
+      echo "Installing updates..."
+      sudo apt-get update -y
