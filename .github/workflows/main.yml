@@ -1,0 +1,34 @@
+name: CI/CDPipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      -main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    name: build image
+    steps:
+      - name: 'checkout nodejs'
+      uses: actions/checkout@v4
+      run: |
+        version: 20
+      -name: "Install Dependencies"
+      run: npm build
+      -name: 'Install Application'
+      run: npm install
+      -name: 'Test Application'
+      run: npm test
+      
+  docker-build:
+    runs-on: ubuntu-latest
+  deploy:
+    runs-on: ubuntu-latest
+  
+  
+
+  
