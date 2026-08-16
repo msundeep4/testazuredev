@@ -13,20 +13,24 @@ jobs:
     runs-on: ubuntu-latest
     name: build image
     steps:
-      - name: 'checkout nodejs'
-      uses: actions/checkout@v4
-      run: |
-        version: 20
-      -name: "Install Dependencies"
-      run: npm build
-      -name: 'Install Application'
-      run: npm install
-      -name: 'Test Application'
-      run: npm test
-      
+      - name: checkout code
+        uses: action/checkout@v4
+      - name: checkout nodejs
+        uses: actions/checkout@v4
+        with:
+          node-version: '20'
+      - name: Install Dependencies
+        run: npm install
+      - name: Build Application
+        run: npm run build
+      - name: Run Test Application
+        run: npm test
+        
   docker-build:
+    needs: build-and-test
     runs-on: ubuntu-latest
   deploy:
+    needs: docker-build
     runs-on: ubuntu-latest
   
   
