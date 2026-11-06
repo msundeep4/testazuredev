@@ -1,5 +1,5 @@
 
-name: CI-CD Pipeline
+name: testazuredev-CI-CD-Pipeline
 
 on:
   push:
@@ -10,29 +10,54 @@ on:
     branches:
       - main
 
+  workflow_dispatch:
+
+# Prevent unnecessary duplicate workflow runs
+concurrency:
+  group: testazuredev-${{ github.ref }}
+  cancel-in-progress: true
+
+# Minimum permissions required
+permissions:
+  contents: read
+
+env:
+  APP_NAME: testazuredev
+  NODE_VERSION: '20'
+
 jobs:
+
+  # JOB 1: Build and Test
   build-and-test:
+    name: Node.js Build and Test
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
-      - name: Checkout code
+      - name: Checkout source code
         uses: actions/checkout@v4
 
       - name: Check project structure
         run: |
+          echo "Project: $APP_NAME"
+          echo "Current directory:"
           pwd
+          echo "Project files:"
           ls -la
-          find . -name package.json
+          echo "Package files:"
+          find . -name package.json -not -path './node_modules/*'
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
 
       - name: Install dependencies
-        run: npm install
-        # If package.json is inside a subfolder,
-        # add working-directory: ./your-folder
+        run: npm ci
+
+      - name: Verify application
+        run: node --check index.js
 
       - name: Build application
         run: npm run build
@@ -40,15 +65,36 @@ jobs:
       - name: Run tests
         run: npm test
 
+  # JOB 2: Docker Build
   docker-build:
+    name: Docker Build
     needs: build-and-test
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
-      - name: Checkout code
+      - name: Checkout source code
         uses: actions/checkout@v4
 
-      - name: Build Docker image
-        run: docker build -t myapp:${{ github.sha }} .
+      - name: Verify Dockerfile
+        run: |
+          if [ ! -f Dockerfile ]; then
+            echo "Dockerfile not found!"
+            exit 1
+          fi
+          echo "Dockerfile found successfully"
 
-      # Docker push requires registry authentication
+      - name: Build Docker image
+        run: |
+          docker build \
+            -t ${{ env.APP_NAME }}:${{ github.sha }} \
+            -t ${{ env.APP_NAME }}:latest .
+
+      - name: Verify Docker image
+        run: docker images ${{ env.APP_NAME }}
+
+      - name: Docker image information
+        run: |
+          echo "Application: $APP_NAME"
+          echo "Image tag: ${{ github.sha }}"
+          echo "Docker build completed successfully"
