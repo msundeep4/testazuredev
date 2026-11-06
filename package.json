@@ -1,20 +1,12 @@
+
 {
   "name": "testazuredev",
   "version": "1.0.0",
-  "description": "",
+  "description": "Node.js application",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/msundeep4/testazuredev.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/msundeep4/testazuredev/issues"
-  },
-  "homepage": "https://github.com/msundeep4/testazuredev#readme"
+    "start": "node index.js",
+    "build": "node --check index.js",
+    "test": "node --test"
+  }
 }
